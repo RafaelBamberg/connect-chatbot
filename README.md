@@ -27,12 +27,23 @@ npm install
 
 Crie um arquivo `.env` na raiz do projeto:
 ```bash
-touch .env
+cp .env.example .env
+```
+
+Configure as variáveis de ambiente no arquivo `.env` com as credenciais do Firebase:
+```
+FIREBASE_API_KEY=seu-api-key
+FIREBASE_AUTH_DOMAIN=seu-projeto.firebaseapp.com
+FIREBASE_PROJECT_ID=seu-projeto
+FIREBASE_STORAGE_BUCKET=seu-projeto.appspot.com
+FIREBASE_MESSAGING_SENDER_ID=seu-sender-id
+FIREBASE_APP_ID=seu-app-id
+FIREBASE_MEASUREMENT_ID=seu-measurement-id
 ```
 
 Inicie o bot:
 ```bash
-node src/index.js
+npm start
 ```
 
 Escaneie o QR Code que aparecerá no terminal com seu WhatsApp
@@ -57,8 +68,41 @@ Escaneie o QR Code que aparecerá no terminal com seu WhatsApp
 Para personalizar as mensagens e funcionalidades:
 
 1. Edite o arquivo `src/index.js`
-2. Modifique as funções `checkBirthdays()` e `checkVisitors()` para incluir sua lógica de dados
+2. As funções `checkBirthdays()` e `checkVisitors()` agora utilizam o Firebase para buscar dados
 3. Ajuste os horários e mensagens conforme necessário
+
+## Estrutura do Banco de Dados Firebase
+
+O sistema espera a seguinte estrutura no Firebase Realtime Database:
+
+### Usuários
+```json
+{
+  "users": {
+    "userId1": {
+      "name": "Nome do Usuário",
+      "phone": "5511999999999",
+      "birthdate": "18/05/1990",
+      "accessToken": "token-de-acesso-unico",
+      "selectedChurch": "igreja-principal"
+    }
+  }
+}
+```
+
+### Visitantes
+```json
+{
+  "visitors": {
+    "visitorId1": {
+      "name": "Nome do Visitante",
+      "phone": "5511999999999",
+      "visitDate": "2025-05-15T10:00:00.000Z",
+      "contacted": false
+    }
+  }
+}
+```
 
 ## Suporte
 
