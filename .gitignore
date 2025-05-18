@@ -2,6 +2,11 @@
 node_modules/
 package-lock.json
 
+# Arquivos específicos que causam problemas
+**/puppeteer-core/.local-chromium/
+**/.local-chromium/
+**/chrome-linux/chrome
+
 # Environment variables
 .env
 
