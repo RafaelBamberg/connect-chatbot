@@ -1,11 +1,1 @@
-connect-chatbot/
-├─ .env
-├─ package.json
-└─ src/
-   ├─ index.js          # Express + webhook verificação
-   ├─ whatsapp.js       # Funções utilitárias (sendText, sendList…)
-   ├─ menuHandler.js    # Lida com respostas do usuário
-   ├─ campaigns/
-   │   ├─ birthdays.js  # Workflow de aniversariantes
-   │   └─ visitors.js   # Workflow de visitantes
-   └─ scheduler.js      # Registro dos crons
+![Screenshot 2025-05-18 044553](https://github.com/user-attachments/assets/12d8eae2-bf23-4bf3-8e2b-7c69617a3aa5)
