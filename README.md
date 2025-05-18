@@ -20,28 +20,22 @@ Este é um chatbot para WhatsApp desenvolvido para auxiliar no gerenciamento e c
 
 ## Instalação
 
-1. Clone o repositório:
-```bash
-git clone [seu-repositorio]
-cd connect-chatbot
-```
-
-2. Instale as dependências:
+ Instale as dependências:
 ```bash
 npm install
 ```
 
-3. Crie um arquivo `.env` na raiz do projeto:
+Crie um arquivo `.env` na raiz do projeto:
 ```bash
 touch .env
 ```
 
-4. Inicie o bot:
+Inicie o bot:
 ```bash
 node src/index.js
 ```
 
-5. Escaneie o QR Code que aparecerá no terminal com seu WhatsApp
+Escaneie o QR Code que aparecerá no terminal com seu WhatsApp
 
 ## Como Usar
 
