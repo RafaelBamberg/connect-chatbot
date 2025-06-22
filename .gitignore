@@ -35,4 +35,6 @@ coverage
 .vscode/
 *.swp
 *.swo
-.DS_Store 
+.DS_Store
+.wwebjs_auth
+.wwebjs_cache
