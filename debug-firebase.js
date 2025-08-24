@@ -1,5 +1,5 @@
 const { ref, get, query } = require("firebase/database");
-const { db } = require("./src/firebaseConfig");
+const { db } = require("./src/config/firebaseConfig");
 
 async function debugFirebase() {
   console.log("🔍 Debugando estrutura do Firebase...");

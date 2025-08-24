@@ -1,6 +1,127 @@
-# 🤖 Connect Chatbot - WhatsApp Bot com Persistência
+# WhatsApp Bot Igreja - Connect Chatbot
 
-Um chatbot para WhatsApp desenvolvido com Node.js e whatsapp-web.js, com sistema de autenticação persistente para igrejas e organizações.
+Um bot WhatsApp avançado para igrejas com sistema de persistência de autenticação, mensagens automáticas para aniversariantes e visitantes.
+
+## 🚀 Funcionalidades
+
+- ✅ **Autenticação Persistente**: Uma vez autenticado, mantém a sessão ativa
+- 🎂 **Mensagens Automáticas de Aniversário**: Envia felicitações automaticamente
+- 👥 **Acompanhamento de Visitantes**: Mensagens automáticas para visitantes recentes
+- 🤖 **Menu Interativo**: Sistema de comandos para informações da igreja
+- 👨‍💼 **Painel Administrativo**: Comandos especiais para administradores
+- 🔄 **Monitoramento Automático**: Verificações periódicas em tempo real
+
+## 📁 Estrutura do Projeto
+
+```
+src/
+├── index.js              # Arquivo principal - orquestra todos os módulos
+├── whatsappClient.js      # Cliente WhatsApp e configurações de conexão
+├── messageHandler.js      # Manipulação de mensagens e comandos
+├── birthdayService.js     # Serviço de mensagens de aniversário
+├── visitorService.js      # Serviço de mensagens para visitantes
+├── scheduler.js           # Sistema de agendamento automático
+├── database.js            # Funções de acesso ao Firebase
+└── firebaseConfig.js      # Configuração do Firebase
+```
+
+## 🏗️ Arquitetura Modular
+
+### `index.js` - Orquestrador Principal
+- Importa e inicializa todos os módulos
+- Configura os event listeners principais
+- Ponto de entrada da aplicação
+
+### `whatsappClient.js` - Cliente WhatsApp
+- Configuração do cliente WhatsApp Web
+- Autenticação persistente com LocalAuth
+- Eventos de conexão e QR Code
+
+### `messageHandler.js` - Gerenciador de Mensagens
+- Processamento de comandos do usuário
+- Menu interativo da igreja
+- Comandos administrativos
+
+### `birthdayService.js` - Serviço de Aniversários
+- Verificação diária de aniversariantes
+- Envio automático de mensagens de parabéns
+- Formato: "Feliz Aniversario {nome} !"
+
+### `visitorService.js` - Serviço de Visitantes
+- Acompanhamento de visitantes recentes
+- Mensagens automáticas de boas-vindas
+- Formato: "Voce e foi cadastrado como visitante"
+
+### `scheduler.js` - Agendador
+- Sistema de verificações automáticas
+- Controle de intervalos e timers
+- Graceful shutdown
+
+## 🔧 Configuração
+
+1. **Instalar dependências:**
+```bash
+npm install
+```
+
+2. **Configurar variáveis de ambiente (.env):**
+```env
+ADMIN_PHONE=5571999121838
+FIREBASE_DATABASE_URL=https://connect-55d3b-default-rtdb.firebaseio.com/
+```
+
+3. **Executar:**
+```bash
+npm start
+```
+
+## 📱 Como Usar
+
+### Para Usuários Comuns:
+- Digite `menu` para ver as opções disponíveis
+- Use números (1-5) para navegar pelo menu
+- Comandos disponíveis: localização, horários, produtos, pastor, visita
+
+### Para Administradores:
+- Digite `admin` para acessar o painel administrativo
+- Comandos especiais: `status`, `debug-data`, `test-birthdays`
+
+## 🔄 Sistema Automático
+
+O bot executa verificações automáticas a cada 30 segundos:
+- **Aniversariantes**: Verifica nascimentos do dia atual
+- **Visitantes**: Identifica visitantes dos últimos 7 dias
+- **Mensagens**: Envia automaticamente sem intervenção manual
+
+## 🗃️ Estrutura do Firebase
+
+```
+visitors/
+├── {IGREJA_ID}/
+│   ├── {VISITOR_ID}/
+│   │   ├── name: "Nome do Visitante"
+│   │   ├── phone: "(71) 99999-9999"
+│   │   ├── dateOfBirthday: "24/08/2002"
+│   │   ├── visitDate: "2025-08-24T09:47:32.524Z"
+│   │   └── contacted: false
+```
+
+## 📊 Logs e Monitoramento
+
+O sistema fornece logs detalhados:
+- ✅ Conexões bem-sucedidas
+- 📱 Mensagens enviadas
+- ❌ Erros e falhas
+- 🔍 Verificações automáticas
+- 📊 Estatísticas de uso
+
+## 🛠️ Tecnologias
+
+- **Node.js**: Runtime JavaScript
+- **whatsapp-web.js**: Integração com WhatsApp Web
+- **Firebase**: Banco de dados em tempo real
+- **Moment.js**: Manipulação de datas
+- **dotenv**: Gerenciamento de variáveis de ambiente
 
 ## ✨ Funcionalidades
 
