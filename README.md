@@ -1,13 +1,33 @@
-# Connect Chatbot - WhatsApp Bot para Gerenciamento de Igreja
+# 🤖 Connect Chatbot - WhatsApp Bot com Persistência
 
-Este é um chatbot para WhatsApp desenvolvido para auxiliar no gerenciamento e comunicação da sua igreja.
+Um chatbot para WhatsApp desenvolvido com Node.js e whatsapp-web.js, com sistema de autenticação persistente para igrejas e organizações.
 
-## Funcionalidades
+## ✨ Funcionalidades
 
-- Menu interativo com opções para informações da igreja
-- Sistema de envio automático de mensagens para:
-  - Aniversariantes
-  - Visitantes
+### 🔐 **Persistência de Autenticação**
+- **Sessão persistente**: Uma vez autenticado, o bot mantém a sessão mesmo após reinicializações
+- **Reconexão automática**: Em caso de desconexão, o bot tenta reconectar automaticamente
+- **Verificação de sessão**: Detecta se existe uma sessão salva antes de solicitar QR code
+- **Armazenamento local seguro**: Dados de sessão salvos localmente com segurança
+
+### 💬 **Sistema de Menu Interativo**
+- Menu principal com opções numeradas
+- Informações sobre a igreja
+- Horários dos cultos
+- Produtos disponíveis
+- Contato com pastores
+- Agendamento de visitas
+
+### 📅 **Tarefas Automatizadas**
+- **Mensagens de aniversário**: Envio automático às 9h para aniversariantes do dia
+- **Follow-up de visitantes**: Mensagens de acompanhamento para visitantes recentes
+- **Rate limiting**: Delay entre mensagens para evitar bloqueios
+
+### 🛡️ **Tratamento de Erros Robusto**
+- Logs detalhados de erros
+- Recuperação automática de falhas
+- Graceful shutdown com limpeza adequada
+- Fallback para casos de erro na comunicação
 - Catálogo de produtos disponíveis
 - Agendamento de visitas
 - Contato com pastores
