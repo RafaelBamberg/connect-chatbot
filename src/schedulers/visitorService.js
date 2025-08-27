@@ -15,7 +15,16 @@ async function checkVisitors() {
     const sentMessages = [];
     
     for (const visitor of visitors) {
-      const message = `Voce e foi cadastrado como visitante`;
+      const message = `✨🙌 *Seja muito bem-vindo(a)!* 🙌✨
+
+A ${visitor.churchName || 'nossa igreja'} sente-se honrada com a sua presença entre nós.
+Você não está aqui por acaso — cremos que Deus tem um propósito especial para a sua vida!
+
+Que esta casa seja também a sua casa, um lugar de fé, esperança e restauração.
+Estamos felizes em caminhar juntos no amor de Cristo. 💒❤️
+
+*"O Senhor te abençoe e te guarde; o Senhor faça resplandecer o seu rosto sobre ti."*
+(Números 6:24-25)`;
 
       if (visitor.phone && !visitor.contacted) {
         const chatId = `${visitor.phone}@c.us`;

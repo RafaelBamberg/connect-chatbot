@@ -15,7 +15,17 @@ async function checkBirthdays() {
     const sentMessages = [];
     
     for (const person of birthdays) {
-      const message = `Feliz Aniversario ${person.name} !`;
+      const message = `🎉 *Parabéns!* 🎉
+
+A família da Igreja Batista Missões Restauradoras se alegra em celebrar a sua vida!
+Você é presente de Deus para todos nós, e cremos que o Senhor tem preparado dias de bênçãos, saúde e muitas conquistas para você.
+
+Que cada novo ano seja cheio da graça, da paz e do amor de Cristo. 🙌✨
+
+*"Este é o dia que fez o Senhor; regozijemo-nos e alegremo-nos nele."*
+(Salmos 118:24)
+
+💒 Receba nosso carinho e orações, e que sua vida continue sendo luz e inspiração para todos nós!`;
 
       if (person.phone) {
         const chatId = `${person.phone}@c.us`;

@@ -1,6 +1,7 @@
 const moment = require("moment");
 const { checkBirthdays } = require("./birthdayService");
 const { checkVisitors } = require("./visitorService");
+const { sendEventNotifications } = require("./eventService");
 
 let dailyCheckInterval;
 let hasRunToday = false;
@@ -46,6 +47,9 @@ async function runDailyChecks() {
     
     console.log("👥 Verificando visitantes recentes...");
     await checkVisitors();
+    
+    console.log("📅 Verificando eventos próximos...");
+    await sendEventNotifications();
     
     hasRunToday = true;
     console.log("✅ Verificação diária concluída!");
