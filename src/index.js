@@ -3,21 +3,15 @@ require("dotenv").config();
 require("./config/firebaseConfig"); // Inicializar Firebase
 
 const { client, initializeClient } = require("./whatsappClient");
-const { handleMessage } = require("./messageHandler");
-const { startDailyTasks } = require("./schedulers/scheduler");
+const { startServer } = require("./server");
 
-// Configurar handler de mensagens
-client.on("message", async (message) => {
-  try {
-    await handleMessage(message, client);
-  } catch (error) {
-    console.error("❌ Erro ao processar mensagem:", error.message);
-  }
-});
+// Inicializar servidor Express imediatamente (independente do WhatsApp)
+console.log("🚀 Iniciando servidor API...");
+startServer();
 
-// Inicializar sistema automático quando cliente estiver pronto
+// Log quando WhatsApp conectar
 client.on("ready", () => {
-  startDailyTasks();
+  console.log("✅ WhatsApp conectado! API pronta para uso completo.");
 });
 
 // Inicializar aplicação
