@@ -219,6 +219,80 @@ app.post('/send-message', rateLimit(10, 300000), async (req, res) => { // 10 env
   }
 });
 
+// Rota para enviar mensagem individual
+app.post('/send-individual-message', rateLimit(100, 60000), async (req, res) => { // 100 mensagens por minuto
+  try {
+    const { phoneNumber, message, senderName, timestamp } = req.body;
+
+    // Validações básicas
+    if (!phoneNumber) {
+      return res.status(400).json({
+        success: false,
+        message: 'Número de telefone é obrigatório'
+      });
+    }
+
+    if (!message) {
+      return res.status(400).json({
+        success: false,
+        message: 'Mensagem é obrigatória'
+      });
+    }
+
+    // Verificar se o cliente WhatsApp está conectado
+    if (!client.info) {
+      return res.status(503).json({
+        success: false,
+        message: 'Cliente WhatsApp não está conectado'
+      });
+    }
+
+    console.log(`📨 Enviando mensagem individual para ${phoneNumber}`);
+    if (senderName) {
+      console.log(`👤 Remetente: ${senderName}`);
+    }
+    console.log(`📝 Mensagem: ${message}`);
+
+    // Normalizar o número de telefone
+    const normalizedPhone = normalizePhoneNumber(phoneNumber);
+    if (!normalizedPhone) {
+      return res.status(400).json({
+        success: false,
+        message: 'Número de telefone inválido'
+      });
+    }
+
+    const chatId = normalizedPhone.includes('@c.us') ? normalizedPhone : `${normalizedPhone}@c.us`;
+    
+    // Enviar mensagem
+    await client.sendMessage(chatId, message);
+    
+    console.log(`✅ Mensagem individual enviada para ${normalizedPhone}`);
+
+    res.json({
+      success: true,
+      message: 'Mensagem enviada com sucesso',
+      data: {
+        normalizedPhone: normalizedPhone,
+        chatId: chatId,
+        originalPhone: phoneNumber,
+        senderName: senderName || null,
+        messageLength: message.length,
+        timestamp: timestamp || new Date().toISOString()
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Erro ao enviar mensagem individual:', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Erro interno do servidor',
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // Rota para verificar o status do WhatsApp (melhorada)
 app.get('/status', (req, res) => {
   try {
@@ -366,6 +440,7 @@ function startServer() {
     console.log(`🌐 Acessível via: http://localhost:${PORT} ou http://[SEU_IP]:${PORT}`);
     console.log(`📋 Endpoints disponíveis:`);
     console.log(`   POST /send-message - Enviar mensagem para todos os membros`);
+    console.log(`   POST /send-individual-message - Enviar mensagem individual`);
     console.log(`   GET  /status - Status detalhado do WhatsApp`);
     console.log(`   POST /logout - Fazer logout e limpar sessão`);
     console.log(`   POST /clear-session - Limpar sessão local`);
@@ -374,6 +449,7 @@ function startServer() {
     console.log(`🔒 Rate Limiting configurado:`);
     console.log(`   Global: 10000 requests por 5 minutos`);
     console.log(`   /send-message: 10 requests a cada 5 minutos`);
+    console.log(`   /send-individual-message: 100 requests por minuto`);
     console.log(`📦 Envio em lotes:`);
     console.log(`   Tamanho do lote: 20 membros`);
     console.log(`   Delay entre mensagens: 0.5s`);
