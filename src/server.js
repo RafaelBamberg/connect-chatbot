@@ -293,6 +293,76 @@ app.post('/send-individual-message', rateLimit(100, 60000), async (req, res) => 
   }
 });
 
+// Rota para enviar resposta do pastor via WhatsApp
+app.post('/send-pastor-response', async (req, res) => {
+    try {
+        const { userPhone, userName, pastorName, subject, response, churchName } = req.body;
+
+        // Validação dos dados obrigatórios
+        if (!userPhone || !userName || !response) {
+            return res.status(400).json({
+                success: false,
+                message: 'Telefone do usuário, nome e resposta são obrigatórios'
+            });
+        }
+
+        // Verificar se o WhatsApp está conectado (corrigir aqui)
+        if (!client || !client.info || client.info.wid._serialized === null) {
+            return res.status(503).json({
+                success: false,
+                message: 'WhatsApp não está conectado'
+            });
+        }
+
+        console.log(`📱 Enviando resposta do pastor para ${userName} (${userPhone})`);
+
+        // Normalizar número de telefone
+        const normalizedPhone = normalizePhoneNumber(userPhone);
+        const chatId = `${normalizedPhone}@c.us`;
+
+        // Criar mensagem formatada para a resposta do pastor
+        const message = `🙏 *Resposta do Pastor* 🙏
+
+Olá, *${userName}*!
+
+O pastor${pastorName ? ` *${pastorName}*` : ''} respondeu sua mensagem${subject ? ` sobre "*${subject}*"` : ''}:
+
+"_${response}_"
+
+${churchName ? `\n🏛️ ${churchName}` : ''}
+
+Que Deus abençoe sua vida! 🙏✨`;
+
+        // Enviar mensagem via WhatsApp
+        await client.sendMessage(chatId, message);
+
+        console.log(`✅ Resposta do pastor enviada com sucesso para ${userName}`);
+
+        res.status(200).json({
+            success: true,
+            message: 'Resposta do pastor enviada com sucesso',
+            data: {
+                normalizedPhone,
+                chatId,
+                originalPhone: userPhone,
+                userName,
+                messageLength: message.length,
+                timestamp: new Date().toISOString()
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ Erro ao enviar resposta do pastor:', error);
+        
+        res.status(500).json({
+            success: false,
+            message: 'Erro interno do servidor ao enviar resposta',
+            error: error.message
+        });
+    }
+});
+
+
 // Rota para verificar o status do WhatsApp (melhorada)
 app.get('/status', (req, res) => {
   try {
