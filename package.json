@@ -3,9 +3,13 @@
   "version": "1.0.0",
   "description": "![Screenshot 2025-05-18 044553](https://github.com/user-attachments/assets/12d8eae2-bf23-4bf3-8e2b-7c69617a3aa5)",
   "main": "index.js",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node src/index.js"
+    "dev": "vercel dev",
+    "start": "node src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",

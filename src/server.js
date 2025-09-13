@@ -547,30 +547,36 @@ app.post('/clear-all', async (req, res) => {
 
 // Inicializar servidor
 function startServer() {
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Servidor Express rodando na porta ${PORT}`);
-    console.log(`🌐 Acessível via: http://localhost:${PORT} ou http://[SEU_IP]:${PORT}`);
-    console.log(`📋 Endpoints disponíveis:`);
-    console.log(`   POST /send-message - Enviar mensagem para todos os membros`);
-    console.log(`   POST /send-individual-message - Enviar mensagem individual`);
-    console.log(`   GET  /status - Status detalhado do WhatsApp`);
-    console.log(`   POST /logout - Fazer logout e limpar sessão`);
-    console.log(`   POST /clear-session - Limpar sessão local`);
-    console.log(`   POST /clear-rate-limit - Limpar rate limit`);
-    console.log(`   POST /clear-all - Limpar tudo (sessão + rate limit)`);
-    console.log(`🔒 Rate Limiting configurado:`);
-    console.log(`   Global: 10000 requests por 5 minutos`);
-    console.log(`   /send-message: 10 requests a cada 5 minutos`);
-    console.log(`   /send-individual-message: 100 requests por minuto`);
-    console.log(`📦 Envio em lotes:`);
-    console.log(`   Tamanho do lote: 20 membros`);
-    console.log(`   Delay entre mensagens: 0.5s`);
-    console.log(`   Delay entre lotes: 10s`);
-    console.log(`💾 Persistência de sessão ativa`);
-  });
+  // Para desenvolvimento local com Express
+  if (process.env.NODE_ENV !== 'production') {
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`🚀 Servidor Express rodando na porta ${PORT}`);
+      console.log(`🌐 Acessível via: http://localhost:${PORT} ou http://[SEU_IP]:${PORT}`);
+      console.log(`📋 Endpoints disponíveis:`);
+      console.log(`   POST /send-message - Enviar mensagem para todos os membros`);
+      console.log(`   POST /send-individual-message - Enviar mensagem individual`);
+      console.log(`   GET  /status - Status detalhado do WhatsApp`);
+      console.log(`   POST /logout - Fazer logout e limpar sessão`);
+      console.log(`   POST /clear-session - Limpar sessão local`);
+      console.log(`   POST /clear-rate-limit - Limpar rate limit`);
+      console.log(`   POST /clear-all - Limpar tudo (sessão + rate limit)`);
+      console.log(`🔒 Rate Limiting configurado:`);
+      console.log(`   Global: 10000 requests por 5 minutos`);
+      console.log(`   /send-message: 10 requests a cada 5 minutos`);
+      console.log(`   /send-individual-message: 100 requests por minuto`);
+      console.log(`📦 Envio em lotes:`);
+      console.log(`   Tamanho do lote: 20 membros`);
+      console.log(`   Delay entre mensagens: 0.5s`);
+      console.log(`   Delay entre lotes: 10s`);
+      console.log(`💾 Persistência de sessão ativa`);
+    });
+  }
+  
+  return app;
 }
 
 module.exports = {
+  app,
   startServer,
   sendMessageToAllMembers
 };
