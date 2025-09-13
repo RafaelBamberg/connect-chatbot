@@ -2,6 +2,7 @@ const { Client, LocalAuth } = require("whatsapp-web.js");
 const qrcode = require("qrcode-terminal");
 const path = require("path");
 const fs = require("fs");
+const { processMessage } = require("./menuSystem");
 
 // Função para normalizar números de telefone brasileiros
 function normalizePhoneNumber(phone) {
@@ -127,8 +128,8 @@ client.on("ready", () => {
   }
 });
 
-// Debug: Mostrar mensagens recebidas no console
-client.on("message", (message) => {
+// Debug: Mostrar mensagens recebidas no console e processar com o sistema de menu
+client.on("message", async (message) => {
   console.log("📨 MENSAGEM RECEBIDA:");
   console.log(`   De: ${message.from}`);
   console.log(`   Para: ${message.to}`);
@@ -140,6 +141,29 @@ client.on("message", (message) => {
     console.log(`   Chat ID: ${message.chatId}`);
   }
   console.log("---");
+  
+  // Processar apenas mensagens de texto de usuários individuais (não grupos)
+  if (message.type === 'chat' && !message.isGroupMsg && !message.fromMe) {
+    try {
+      console.log(`🤖 Processando mensagem do usuário...`);
+      const response = await processMessage(message);
+      
+      if (response) {
+        console.log(`📤 Enviando resposta: "${response.substring(0, 100)}..."`);
+        await message.reply(response);
+        console.log(`✅ Resposta enviada com sucesso`);
+      }
+    } catch (error) {
+      console.error(`❌ Erro ao processar mensagem:`, error);
+      try {
+        await message.reply(`❌ Ocorreu um erro interno. Tente novamente em alguns instantes.
+
+Para voltar ao menu principal, digite "Ajuda".`);
+      } catch (replyError) {
+        console.error(`❌ Erro ao enviar mensagem de erro:`, replyError);
+      }
+    }
+  }
 });
 
 // Debug: Mostrar mensagens enviadas no console

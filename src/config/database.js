@@ -74,6 +74,175 @@ async function getAllChurchMembers(churchId) {
   }
 }
 
+// Função para buscar um usuário pelo número de telefone
+async function getUserByPhone(phone) {
+  if (!phone || !db) {
+    return null;
+  }
+
+  try {
+    const normalizedPhone = normalizePhoneNumber(phone);
+    console.log(`🔍 Buscando usuário pelo telefone: ${normalizedPhone}`);
+    
+    // Buscar em todas as igrejas
+    const refMembers = ref(db, 'members');
+    const snapshot = await get(refMembers);
+    
+    if (snapshot.exists()) {
+      const churchesData = snapshot.val();
+      
+      for (const [churchId, members] of Object.entries(churchesData)) {
+        for (const [memberId, member] of Object.entries(members)) {
+          if (normalizePhoneNumber(member.phone) === normalizedPhone) {
+            console.log(`✅ Usuário encontrado na igreja ${churchId}`);
+            return {
+              ...member,
+              memberId,
+              churchId,
+              phone: normalizedPhone
+            };
+          }
+        }
+      }
+    }
+    
+    console.log(`❌ Usuário não encontrado para o telefone: ${normalizedPhone}`);
+    return null;
+  } catch (error) {
+    console.error("❌ Erro ao buscar usuário:", error.message);
+    return null;
+  }
+}
+
+// Função para buscar todas as igrejas que um usuário faz parte
+async function getUserChurches(phone) {
+  if (!phone || !db) {
+    return [];
+  }
+
+  try {
+    const normalizedPhone = normalizePhoneNumber(phone);
+    console.log(`🔍 Buscando igrejas do usuário: ${normalizedPhone}`);
+    
+    const userChurches = [];
+    const refMembers = ref(db, 'members');
+    const snapshot = await get(refMembers);
+    
+    if (snapshot.exists()) {
+      const churchesData = snapshot.val();
+      
+      for (const [churchId, members] of Object.entries(churchesData)) {
+        for (const [memberId, member] of Object.entries(members)) {
+          if (normalizePhoneNumber(member.phone) === normalizedPhone) {
+            console.log(`✅ Usuário encontrado na igreja ${churchId}, membro ID: ${memberId}`);
+            // Buscar informações da igreja
+            const churchInfo = await getChurchInfo(churchId);
+            console.log(`🏛️ Informações da igreja ${churchId}:`, churchInfo ? 'Encontradas' : 'NÃO encontradas');
+            userChurches.push({
+              churchId,
+              churchName: churchInfo?.name || `Igreja ${churchId}`,
+              churchInfo,
+              memberInfo: {
+                ...member,
+                memberId,
+                phone: normalizedPhone
+              }
+            });
+          }
+        }
+      }
+    }
+    
+    console.log(`✅ Encontradas ${userChurches.length} igrejas para o usuário`);
+    return userChurches;
+  } catch (error) {
+    console.error("❌ Erro ao buscar igrejas do usuário:", error.message);
+    return [];
+  }
+}
+
+// Função para buscar informações de uma igreja específica
+async function getChurchInfo(churchId) {
+  if (!churchId || !db) {
+    console.log(`❌ getChurchInfo: churchId ou db inválido - churchId: ${churchId}, db: ${!!db}`);
+    return null;
+  }
+
+  try {
+    console.log(`🔍 Buscando informações da igreja: ${churchId}`);
+    
+    // Lista de caminhos possíveis para buscar a igreja
+    const searchPaths = [
+      churchId,                    // Diretamente pelo ID
+      `churches/${churchId}`,      // Em uma coleção churches
+      `church/${churchId}`,        // Em uma coleção church (singular)
+      `igrejas/${churchId}`,       // Em português
+      `${churchId}/info`,          // Info dentro do ID
+      `${churchId}/church`         // Church dentro do ID
+    ];
+    
+    for (const path of searchPaths) {
+      console.log(`🔍 Tentando caminho: ${path}`);
+      const refChurch = ref(db, path);
+      const snapshot = await get(refChurch);
+      
+      if (snapshot.exists()) {
+        const churchData = snapshot.val();
+        console.log(`✅ Igreja encontrada no caminho: ${path}`);
+        console.log(`📊 Nome da igreja: ${churchData.name || 'Nome não disponível'}`);
+        console.log(`📊 Chaves disponíveis:`, Object.keys(churchData));
+        return churchData;
+      } else {
+        console.log(`❌ Não encontrado em: ${path}`);
+      }
+    }
+    
+    // Se não encontrou, fazer uma busca mais ampla
+    console.log(`🔍 Fazendo busca ampla no Firebase...`);
+    const rootRef = ref(db, '/');
+    const rootSnapshot = await get(rootRef);
+    
+    if (rootSnapshot.exists()) {
+      const rootData = rootSnapshot.val();
+      console.log(`🔍 Chaves disponíveis no nível raiz:`, Object.keys(rootData));
+      
+      // Procurar recursivamente pela igreja
+      for (const [key, value] of Object.entries(rootData)) {
+        if (typeof value === 'object' && value !== null) {
+          // Se o valor é um objeto, verificar se tem informações de igreja
+          if (value.name && (key === churchId || key.includes(churchId))) {
+            console.log(`🎯 Igreja encontrada em: ${key}`);
+            return value;
+          }
+          
+          // Verificar se há uma subchave com o churchId
+          if (value[churchId]) {
+            console.log(`🎯 Igreja encontrada em: ${key}/${churchId}`);
+            return value[churchId];
+          }
+        }
+      }
+      
+      // Última tentativa: procurar por qualquer objeto que tenha o nome da igreja
+      for (const [key, value] of Object.entries(rootData)) {
+        if (typeof value === 'object' && value !== null && value.name && value.id === churchId) {
+          console.log(`🎯 Igreja encontrada por ID em: ${key}`);
+          return value;
+        }
+      }
+    }
+    
+    console.log(`❌ Igreja ${churchId} não encontrada em nenhum lugar`);
+    return null;
+  } catch (error) {
+    console.error("❌ Erro ao buscar informações da igreja:", error.message);
+    return null;
+  }
+}
+
 module.exports = {
   getAllChurchMembers,
+  getUserByPhone,
+  getUserChurches,
+  getChurchInfo,
 };
