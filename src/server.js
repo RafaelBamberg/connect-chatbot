@@ -60,9 +60,15 @@ app.use(express.json());
 app.use(rateLimit(100, 60000)); // 100 requests por minuto para rotas gerais
 
 // Função para enviar mensagem para todos os membros de uma igreja
-async function sendMessageToAllMembers(churchId, message) {
+async function sendMessageToAllMembers(churchId, message, sendWithImage = false, imageUrl = null, caption = null) {
+  const { MessageMedia } = require('whatsapp-web.js');
+  
   try {
     console.log(`📤 Enviando mensagem para todos os membros da igreja ${churchId}`);
+    console.log(`🖼️ Enviando com imagem: ${sendWithImage ? 'Sim' : 'Não'}`);
+    if (sendWithImage) {
+      console.log(`🔗 URL da imagem: ${imageUrl}`);
+    }
     
     // Buscar todos os membros da igreja
     const members = await getAllChurchMembers(churchId);
@@ -74,10 +80,27 @@ async function sendMessageToAllMembers(churchId, message) {
 
     console.log(`👥 Encontrados ${members.length} membros para enviar mensagem`);
 
+    // Preparar mídia se necessário
+    let media = null;
+    if (sendWithImage && imageUrl) {
+      try {
+        console.log(`🖼️ Carregando imagem de: ${imageUrl}`);
+        media = await MessageMedia.fromUrl(imageUrl);
+        console.log(`✅ Imagem carregada com sucesso`);
+      } catch (error) {
+        console.error(`❌ Erro ao carregar imagem: ${error.message}`);
+        return {
+          success: false,
+          message: `Erro ao carregar imagem: ${error.message}`,
+          statistics: { total: members.length, sent: 0, errors: 1, skipped: members.length }
+        };
+      }
+    }
+
     // Configurações para envio em lotes
-    const BATCH_SIZE = 20; // Processar 20 membros por vez
-    const DELAY_BETWEEN_MESSAGES = 500; // 0.5 segundos entre mensagens
-    const DELAY_BETWEEN_BATCHES = 10000; // 10 segundos entre lotes
+    const BATCH_SIZE = 15; // Reduzir para 15 quando há imagem
+    const DELAY_BETWEEN_MESSAGES = sendWithImage ? 1000 : 500; // 1s para imagem, 0.5s para texto
+    const DELAY_BETWEEN_BATCHES = sendWithImage ? 15000 : 10000; // 15s para imagem, 10s para texto
 
     const results = [];
     const totalBatches = Math.ceil(members.length / BATCH_SIZE);
@@ -104,8 +127,15 @@ async function sendMessageToAllMembers(churchId, message) {
             const normalizedPhone = normalizePhoneNumber(member.phone);
             const chatId = normalizedPhone.includes('@c.us') ? normalizedPhone : `${normalizedPhone}@c.us`;
             
-            await client.sendMessage(chatId, message);
-            console.log(`✅ Mensagem enviada para ${member.name} (${normalizedPhone})`);
+            if (sendWithImage && media) {
+              // Enviar imagem com caption
+              await client.sendMessage(chatId, media, { caption: caption || message });
+              console.log(`✅🖼️ Imagem enviada para ${member.name} (${normalizedPhone})`);
+            } else {
+              // Enviar apenas texto
+              await client.sendMessage(chatId, message);
+              console.log(`✅ Mensagem enviada para ${member.name} (${normalizedPhone})`);
+            }
             
             results.push({
               name: member.name,
@@ -113,7 +143,7 @@ async function sendMessageToAllMembers(churchId, message) {
               status: 'enviado'
             });
             
-            // Delay entre mensagens (menor delay)
+            // Delay entre mensagens (maior delay para imagens)
             await new Promise(resolve => setTimeout(resolve, DELAY_BETWEEN_MESSAGES));
             
           } catch (error) {
@@ -152,7 +182,7 @@ async function sendMessageToAllMembers(churchId, message) {
 
     return {
       success: true,
-      message: `Mensagem processada para ${results.length} membros (${enviados} enviados, ${erros} erros, ${pulados} pulados)`,
+      message: `Mensagem ${sendWithImage ? 'com imagem ' : ''}processada para ${results.length} membros (${enviados} enviados, ${erros} erros, ${pulados} pulados)`,
       results: results,
       statistics: {
         total: results.length,
@@ -172,7 +202,7 @@ async function sendMessageToAllMembers(churchId, message) {
 // Rota para enviar mensagem personalizada para todos os membros de uma igreja
 app.post('/send-message', rateLimit(10, 300000), async (req, res) => { // 10 envios a cada 5 minutos
   try {
-    const { churchId, message } = req.body;
+    const { churchId, message, sendWithImage, imageUrl, caption } = req.body;
 
     // Validações básicas
     if (!churchId) {
@@ -182,10 +212,18 @@ app.post('/send-message', rateLimit(10, 300000), async (req, res) => { // 10 env
       });
     }
 
-    if (!message) {
+    if (!message && !caption) {
       return res.status(400).json({
         success: false,
         message: 'Mensagem é obrigatória'
+      });
+    }
+
+    // Validação específica para envio com imagem
+    if (sendWithImage && !imageUrl) {
+      return res.status(400).json({
+        success: false,
+        message: 'URL da imagem é obrigatória quando sendWithImage é true'
       });
     }
 
@@ -198,10 +236,14 @@ app.post('/send-message', rateLimit(10, 300000), async (req, res) => { // 10 env
     }
 
     console.log(`📨 Recebida solicitação para enviar mensagem para igreja ${churchId}`);
-    console.log(`📝 Mensagem: ${message}`);
+    console.log(`📝 Mensagem: ${message || caption}`);
+    console.log(`🖼️ Enviando com imagem: ${sendWithImage ? 'Sim' : 'Não'}`);
+    if (sendWithImage) {
+      console.log(`🔗 URL da imagem: ${imageUrl}`);
+    }
 
-    // Enviar mensagem para todos os membros
-    const result = await sendMessageToAllMembers(churchId, message);
+    // Enviar mensagem para todos os membros (com ou sem imagem)
+    const result = await sendMessageToAllMembers(churchId, message, sendWithImage, imageUrl, caption);
 
     if (result.success) {
       res.json(result);
