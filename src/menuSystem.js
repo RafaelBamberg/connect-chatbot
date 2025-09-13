@@ -81,7 +81,8 @@ Entre em contato com a administração para verificar sua situação.`;
       // Salvar estado com igreja selecionada
       userStates.set(phoneNumber, {
         state: STATES.CHURCH_SELECTED,
-        selectedChurch: selectedChurch
+        selectedChurch: selectedChurch,
+        hasMultipleChurches: false
       });
       
       return `Olá, ${user.name}! 👋
@@ -132,7 +133,8 @@ Digite um número entre 1 e ${userState.churches.length}.`;
   // Atualizar estado para igreja selecionada
   userStates.set(phoneNumber, {
     state: STATES.CHURCH_SELECTED,
-    selectedChurch: selectedChurch
+    selectedChurch: selectedChurch,
+    hasMultipleChurches: userState.churches.length > 1
   });
   
   return `🏛️ *${selectedChurch.churchName}*
@@ -144,6 +146,7 @@ ${getMainMenu()}`;
 async function handleMenuCommands(phoneNumber, messageText, user, userState) {
   const command = messageText.toLowerCase();
   const selectedChurch = userState.selectedChurch;
+  const hasMultipleChurches = userState.hasMultipleChurches;
   
   console.log(`🎯 Comando recebido: "${command}"`);
   console.log(`🏛️ Igreja selecionada:`, selectedChurch?.churchName);
@@ -156,17 +159,17 @@ async function handleMenuCommands(phoneNumber, messageText, user, userState) {
   
   switch (command) {
     case 'palavra do dia':
-      return formatPalavraFoDia(selectedChurch.churchInfo, selectedChurch.churchName);
+      return formatPalavraFoDia(selectedChurch.churchInfo, selectedChurch.churchName, hasMultipleChurches);
       
     case 'dias de culto':
-      return formatDiasDeCulto(selectedChurch.churchInfo, selectedChurch.churchName);
+      return formatDiasDeCulto(selectedChurch.churchInfo, selectedChurch.churchName, hasMultipleChurches);
       
     case 'endereço':
     case 'endereco':
-      return formatEndereco(selectedChurch.churchInfo, selectedChurch.churchName);
+      return formatEndereco(selectedChurch.churchInfo, selectedChurch.churchName, hasMultipleChurches);
       
     case 'contato':
-      return formatContato(selectedChurch.churchInfo, selectedChurch.churchName);
+      return formatContato(selectedChurch.churchInfo, selectedChurch.churchName, hasMultipleChurches);
       
     case 'ajuda':
     case 'menu':
@@ -175,9 +178,18 @@ async function handleMenuCommands(phoneNumber, messageText, user, userState) {
 ${getMainMenu()}`;
       
     case 'trocar igreja':
-      // Limpar estado e voltar ao início
-      userStates.delete(phoneNumber);
-      return await handleInitialState(phoneNumber, messageText, user);
+      // Só permitir se usuário tem múltiplas igrejas
+      if (hasMultipleChurches) {
+        // Limpar estado e voltar ao início
+        userStates.delete(phoneNumber);
+        return await handleInitialState(phoneNumber, messageText, user);
+      } else {
+        return `🏛️ *${selectedChurch.churchName}*
+
+Você faz parte apenas desta igreja.
+
+${getMainMenu()}`;
+      }
       
     case 'debug':
       // Comando especial para debug (oculto)
@@ -195,12 +207,12 @@ ${getMainMenu()}
 ⚠️ Comando não reconhecido: "${messageText}"
 Digite exatamente um dos comandos listados acima.
 
-💡 Digite "Trocar igreja" para selecionar outra igreja.`;
+${hasMultipleChurches ? '💡 Digite "Trocar igreja" para selecionar outra igreja.' : ''}`;
   }
 }
 
 // Formatar palavra do dia
-function formatPalavraFoDia(churchInfo, churchName = null) {
+function formatPalavraFoDia(churchInfo, churchName = null, hasMultipleChurches = false) {
   console.log(`📖 formatPalavraFoDia chamado com:`, {
     churchInfo: !!churchInfo,
     churchName,
@@ -210,8 +222,8 @@ function formatPalavraFoDia(churchInfo, churchName = null) {
   if (!churchInfo) {
     return `❌ Informações da igreja não disponíveis no momento.
 
-Para ver o menu novamente, digite "Ajuda".
-💡 Digite "Trocar igreja" para selecionar outra igreja.`;
+Para ver o menu novamente, digite "Menu".
+${hasMultipleChurches ? '💡 Digite "Trocar igreja" para selecionar outra igreja.' : ''}`;
   }
   
   let response = `📖 *Palavra do Dia*\n`;
@@ -227,18 +239,18 @@ Para ver o menu novamente, digite "Ajuda".
   }
   
   response += `Para ver o menu novamente, digite "Menu".
-💡 Digite "Trocar igreja" para selecionar outra igreja.`;
+${hasMultipleChurches ? '💡 Digite "Trocar igreja" para selecionar outra igreja.' : ''}`;
   
   return response;
 }
 
 // Formatar dias de culto
-function formatDiasDeCulto(churchInfo, churchName = null) {
+function formatDiasDeCulto(churchInfo, churchName = null, hasMultipleChurches = false) {
   if (!churchInfo) {
     return `❌ Informações da igreja não disponíveis no momento.
 
 Para ver o menu novamente, digite "Menu".
-💡 Digite "Trocar igreja" para selecionar outra igreja.`;
+${hasMultipleChurches ? '💡 Digite "Trocar igreja" para selecionar outra igreja.' : ''}`;
   }
   
   let response = `📅 *Dias de Culto*\n`;
@@ -287,18 +299,18 @@ Para ver o menu novamente, digite "Menu".
   }
   
   response += `Para ver o menu novamente, digite "Menu".
-💡 Digite "Trocar igreja" para selecionar outra igreja.`;
+${hasMultipleChurches ? '💡 Digite "Trocar igreja" para selecionar outra igreja.' : ''}`;
   
   return response;
 }
 
 // Formatar endereço
-function formatEndereco(churchInfo, churchName = null) {
+function formatEndereco(churchInfo, churchName = null, hasMultipleChurches = false) {
   if (!churchInfo) {
     return `❌ Informações da igreja não disponíveis no momento.
 
 Para ver o menu novamente, digite "Menu".
-💡 Digite "Trocar igreja" para selecionar outra igreja.`;
+${hasMultipleChurches ? '💡 Digite "Trocar igreja" para selecionar outra igreja.' : ''}`;
   }
   
   let response = `📍 *Endereço*\n`;
@@ -322,18 +334,18 @@ Para ver o menu novamente, digite "Menu".
   }
   
   response += `Para ver o menu novamente, digite "Menu".
-💡 Digite "Trocar igreja" para selecionar outra igreja.`;
+${hasMultipleChurches ? '💡 Digite "Trocar igreja" para selecionar outra igreja.' : ''}`;
   
   return response;
 }
 
 // Formatar contato
-function formatContato(churchInfo, churchName = null) {
+function formatContato(churchInfo, churchName = null, hasMultipleChurches = false) {
   if (!churchInfo) {
     return `❌ Informações da igreja não disponíveis no momento.
 
 Para ver o menu novamente, digite "Menu".
-💡 Digite "Trocar igreja" para selecionar outra igreja.`;
+${hasMultipleChurches ? '💡 Digite "Trocar igreja" para selecionar outra igreja.' : ''}`;
   }
   
   let response = `📞 *Contato*\n`;
@@ -360,7 +372,7 @@ Para ver o menu novamente, digite "Menu".
   }
   
   response += `\nPara ver o menu novamente, digite "Menu".
-💡 Digite "Trocar igreja" para selecionar outra igreja.`;
+${hasMultipleChurches ? '💡 Digite "Trocar igreja" para selecionar outra igreja.' : ''}`;
   
   return response;
 }
